@@ -1,0 +1,20 @@
+{
+  "name": "dir-vis",
+  "private": true,
+  "version": "0.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "dirdata": "node ./scripts/getDir.js"
+  },
+  "dependencies": {
+    "@antv/g6": "^4.8.5",
+    "vue": "^3.2.45"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.0.0",
+    "vite": "^4.1.0"
+  }
+}
