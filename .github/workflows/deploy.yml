@@ -28,4 +28,4 @@ jobs:
         uses: ftnext/action-push-ghpages@v1.0.0
         with:
           build_dir: dist
-          github_token: ${{ secrets.VISUAL_SCREEN_TOKEN  }}
+          github_token: ${{ secrets.DEPLOY_TOKEN  }}
