@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+let exclude = ["node_modules", ".git", ".prettierignore","dist"];
 
 const getCatalog = (dir) => {
   let filesNameArr = [];
@@ -9,33 +10,33 @@ const getCatalog = (dir) => {
   // 先遍历一遍给其建立深度索引
   const getMap = (dir, curIndex) => {
     let files = fs.readdirSync(dir); //同步拿到文件目录下的所有文件名
-    files.map(function (file) {
+    files.map((file) => {
       //let subPath = path.resolve(dir, file) //拼接为绝对路径
       let subPath = path.join(dir, file); //拼接为相对路径
       let stats = fs.statSync(subPath); //拿到文件信息对象
       // 必须过滤掉文件夹
-      let exclude = ["node_modules", ".git", ".prettierignore"];
-      if (!exclude.includes(file)) {
-        mapDeep[file] = curIndex + 1;
-        if (stats.isDirectory()) {
-          //判断是否为文件夹类型
-          return getMap(subPath, mapDeep[file]); //递归读取文件夹
-        }
+      if (exclude.includes(file)) return;
+      mapDeep[file] = curIndex + 1;
+      if (stats.isDirectory()) {
+        //判断是否为文件夹类型
+        return getMap(subPath, mapDeep[file]); //递归读取文件夹
       }
     });
   };
   //生成随机id
   const generateRandomId = (count = 8) => {
-    return Math.random().toString(36).substring(2, 2 + count);
+    return Math.random()
+      .toString(36)
+      .substring(2, 2 + count);
   };
   getMap(dir, mapDeep[dir]);
   const readdirs = (dir, folderName, myroot) => {
     let result = {
       //构造文件夹数据
-      id:generateRandomId(),
+      id: generateRandomId(),
       path: dir,
       name: path.basename(dir),
-      type: "directory",
+      ftype: "dir",
       deep: mapDeep[folderName],
     };
     let files = fs.readdirSync(dir); //同步拿到文件目录下的所有文件名
@@ -43,18 +44,22 @@ const getCatalog = (dir) => {
       //let subPath = path.resolve(dir, file) //拼接为绝对路径
       let subPath = path.join(dir, file); //拼接为相对路径
       let stats = fs.statSync(subPath); //拿到文件信息对象
+      if (exclude.includes(file)) return;
       if (stats.isDirectory()) {
         //判断是否为文件夹类型
         return readdirs(subPath, file, file); //递归读取文件夹
       }
+      let ext = file.lastIndexOf(".") > -1
+        ? file.slice(file.lastIndexOf(".") + 1) 
+        : "uknown";
       return {
         //构造文件数据
-        id:generateRandomId(),   
+        id: generateRandomId(),
         path: subPath,
         name: file,
-        type: "file",
+        ftype: ext,
       };
-    });
+    }).filter(file => file);
     return result; //返回数据
   };
   filesNameArr.push(readdirs(dir, dir));

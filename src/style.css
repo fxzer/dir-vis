@@ -1,9 +1,58 @@
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@font-face {
+  font-family: "iconfont"; /* Project id 3891585 */
+  src: url('//at.alicdn.com/t/c/font_3891585_doh4ofdtha.woff2?t=1676184094955') format('woff2'),
+       url('//at.alicdn.com/t/c/font_3891585_doh4ofdtha.woff?t=1676184094955') format('woff'),
+       url('//at.alicdn.com/t/c/font_3891585_doh4ofdtha.ttf?t=1676184094955') format('truetype');
 }
-body{
-  width: 100%;
-  height: 100vh;
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-git:before {
+  content: "\e799";
+}
+
+.icon-html:before {
+  content: "\e68c";
+}
+
+.icon-css:before {
+  content: "\e653";
+}
+
+.icon-unknown:before {
+  content: "\e858";
+}
+
+.icon-vue:before {
+  content: "\e79a";
+}
+
+.icon-dir:before {
+  content: "\eac5";
+}
+
+.icon-config:before {
+  content: "\e607";
+}
+
+.icon-md:before {
+  content: "\e672";
+}
+
+.icon-ts:before {
+  content: "\e6a3";
+}
+
+.icon-js:before {
+  content: "\ebd8";
+}
+
+.icon-json:before {
+  content: "\e618";
 }
