@@ -3,11 +3,10 @@ import G6 from '@antv/g6';
 import * as echarts from 'echarts';
 import { onMounted } from 'vue';
 import registerNode from './registerNode'
-import { ref, watch ,nextTick } from 'vue'
-let agraph = null;
-let egraph = null;
-let acontainer = null;
-let econtainer = null;
+import  getDirData from './getDirData'
+import { ref, watch  } from 'vue'
+let graph = null;
+let container = null;
 const graphType = ref('缩进树图')
 const treemapOption = {
   series: [
@@ -49,10 +48,10 @@ const sunburstOption = {
   ]
 };
 const initGraph = () => {
-  const width = acontainer.scrollWidth;
-  const height = acontainer.scrollHeight || 600;
+  const width = container.scrollWidth;
+  const height = container.scrollHeight || 600;
   return new G6.TreeGraph({
-    container:acontainer,
+    container,
     width,
     height,
     // fitCenter: true,
@@ -80,98 +79,54 @@ const initGraph = () => {
     },
   });
 }
-
-//监听图类型变化
-watch(graphType, (val) => {
-  graphTypeMap[val]()
-})
-//生成随机id
-const randomId = (count = 8) => {
-  return Math.random()
-    .toString(36)
-    .substring(2, 2 + count);
-};
 const directoryData = {
-  id: randomId(),
+  id: 'root',
   name: '',
   children: []
 }
+//监听图类型变化
+watch(graphType, (val,oldVal) => {
+    oldVal =='缩进树图' ? graph?.destroy():graph?.dispose()
+    if(directoryData.children.length) graphTypeMap[val]()
+})
+
+
 const onSelectDir = async () => {
   const dirHandle = await window.showDirectoryPicker()
   await getDirData(dirHandle, directoryData)
   graphTypeMap[graphType.value]()
 }
+const treeGraphDraw = () =>{
+  graph = initGraph()
+  graph.read(directoryData);
+  graph.fitView()
+}
+const echartDraw = (option) =>{
+  return () =>{
+    graph = null
+    graph = echarts.init(container);
+    option.series[0].data = directoryData.children
+    graph.setOption(option)
+  }
+  
+}
 //图形类型对应的策略
 const graphTypeMap = {
-  '缩进树图': () => {
-    agraph.read(directoryData);
-    // agraph.fitView()
-  },
-  '矩形树图': () => {
-    treemapOption.series[0].data = directoryData.children
-    egraph.setOption(treemapOption)
-  },
-  '旭日图': () => {
-    sunburstOption.series[0].data = directoryData.children
-    egraph.setOption(sunburstOption)
-  }
-}
-/*递归获取文件夹下的所有文件, 并生成树状结构 
- {
-"id": "o6ukw45e",
-"name": "core",
-"ftype": "dir",
-"children": [
-  {
-    "id": "bc41wb16",
-    "name": ".eslintrc.cjs",
-    "ftype": "cjs"
-  },]
-}
-*/
-let exclude = ["node_modules", ".git", ".vscode", ".prettierignore", "dist"]; //排除的文件夹
-const getDirData = async (dirHandle, dirData) => {
-  for await (const entry of dirHandle.values()) {
-    let { name, kind } = entry
-    //文件大小
-    if (kind === 'file') {
-      const size = await entry.getFile().then(file => file.size || 0)
-      const ftype = name.split('.').length > 1 ? name.split('.')[1] : 'unknown'
-      dirData.children.push({
-        id: randomId(),
-        name,
-        size,
-        value: size,
-        ftype
-      })
-    } else if (kind === 'directory') {
-      if (exclude.includes(name)) continue;
-      const children = {
-        id: randomId(),
-        name,
-        ftype: 'dir',
-        children: []
-      }
-      dirData.children.push(children)
-      await getDirData(entry, children)
-    }
-  }
+  '缩进树图': treeGraphDraw,
+  '矩形树图': echartDraw(treemapOption),
+  '旭日图':  echartDraw(sunburstOption)
 }
 //注册节点,初始化图
 onMounted(() => {
-    registerNode();
-    acontainer = document.getElementById('agraph');
-    agraph = initGraph()
-    econtainer = document.getElementById('egraph');
-    egraph = echarts.init(econtainer);
+  registerNode();
+  container = document.getElementById('graph');
 })
 
 </script>
 
 <template>
   <div class="wrap">
-    <div id="agraph" v-show="graphType == '缩进树图'"></div>
-    <div id="egraph" v-show="graphType != '缩进树图'"></div>
+    <div id="graph" ></div>
     <div class="opts-wrap">
       <button @click="onSelectDir" class="select-btn">选择文件夹</button>
       <input type="radio" id="缩进树图" value="缩进树图" v-model="graphType" />
@@ -186,7 +141,7 @@ onMounted(() => {
 </template>
 
 <style scoped  >
-#agraph,#egraph {
+#graph,#graph {
   width: 100%;
   height: calc(100vh - 10px);
   position: relative;
